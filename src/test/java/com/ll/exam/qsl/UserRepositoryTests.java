@@ -63,7 +63,14 @@ public class UserRepositoryTests {
     @DisplayName("모든 회원 수")
     void t4() {
         long count = userRepository.getQslCount();
-        
+
         assertThat(count).isGreaterThan(0);
+    }
+
+    @Test
+    @DisplayName("가장 오래된 회원 1명")
+    void t5() {
+        SiteUser u1 = userRepository.getQslUserOrderByIdAscOne();
+        assertThat(u1.getId()).isEqualTo(1L);
     }
 }
