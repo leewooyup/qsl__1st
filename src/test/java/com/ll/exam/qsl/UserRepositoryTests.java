@@ -8,11 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @SpringBootTest
+@Transactional
 @ActiveProfiles("test")
 public class UserRepositoryTests {
     @Autowired
