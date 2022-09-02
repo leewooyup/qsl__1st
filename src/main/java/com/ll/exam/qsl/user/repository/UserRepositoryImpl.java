@@ -93,7 +93,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             usersQuery.orderBy(new OrderSpecifier(o.isAscending() ? Order.ASC : Order.DESC, pathBuilder.get(o.getProperty())));
         }
         List<SiteUser> users = usersQuery.fetch();
-        LongSupplier totalSupplier = () -> 2; // 몇개인지 알려주는 역할, 일단 하드코딩
-        return PageableExecutionUtils.getPage(users, pageable, totalSupplier);
+
+        return PageableExecutionUtils.getPage(users, pageable, usersQuery::fetchCount);
     }
 }
