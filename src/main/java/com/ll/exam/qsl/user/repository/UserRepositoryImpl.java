@@ -94,6 +94,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         }
         List<SiteUser> users = usersQuery.fetch();
 
-        return PageableExecutionUtils.getPage(users, pageable, usersQuery::fetchCount);
+        JPAQuery<Long> usersCountQuery = jpaQueryFactory
+                .select(siteUser.count())
+                .from(siteUser)
+                .where(
+                        siteUser.username.contains(kw)
+                                .or(siteUser.email.contains(kw))
+                );
+        return PageableExecutionUtils.getPage(users, pageable, usersCountQuery::fetchOne);
     }
 }
