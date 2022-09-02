@@ -1,9 +1,14 @@
 package com.ll.exam.qsl.user.repository;
 import com.ll.exam.qsl.user.entity.SiteUser;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
@@ -72,7 +77,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
     @Override
     public Page<SiteUser> seachQsl(String kw, Pageable pageable) {
-        List<SiteUser> users = jpaQueryFactory
+        JPAQuery<SiteUser> usersQuery = jpaQueryFactory
                 .select(siteUser)
                 .from(siteUser)
                 .where(
@@ -81,9 +86,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 )
                 .offset(pageable.getOffset()) //Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sorts));서 정보를 줬으니까 알아서 계산
                                               // 몇개 건너띄어야하는지 LIMIT {1}, ?
-                .limit(pageable.getPageSize()) // 몇개 보여야하는지 LIMIT ?, {1}
-                .orderBy(siteUser.id.asc())
-                .fetch();
+                .limit(pageable.getPageSize()); // 몇개 보여야하는지 LIMIT ?, {1}
+
+        for(Sort.Order o : pageable.getSort()) { // getSort에 sorts.add 했던 정보가 들어온다
+            PathBuilder pathBuilder = new PathBuilder(siteUser.getType(), siteUser.getMetadata());
+            usersQuery.orderBy(new OrderSpecifier(o.isAscending() ? Order.ASC : Order.DESC, pathBuilder.get(o.getProperty())));
+        }
+        List<SiteUser> users = usersQuery.fetch();
         LongSupplier totalSupplier = () -> 2; // 몇개인지 알려주는 역할, 일단 하드코딩
         return PageableExecutionUtils.getPage(users, pageable, totalSupplier);
     }
