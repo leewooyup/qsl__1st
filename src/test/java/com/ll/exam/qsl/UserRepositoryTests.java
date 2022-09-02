@@ -6,9 +6,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -106,5 +111,32 @@ public class UserRepositoryTests {
         assertThat(u1.getUsername()).isEqualTo("user1");
         assertThat(u1.getEmail()).isEqualTo("user1@test.com");
         assertThat(u1.getPassword()).isEqualTo("{noop}1234");
+    }
+
+    @Test
+    @DisplayName("검색, Page 리턴, id ASC, pageSize=1, page=0")
+    void v8() {
+        long totalCount = userRepository.count();
+        int pageSize = 1;  // 한페이지에 보여줄 아이템 개수
+        int totalPages = (int)Math.ceil(totalCount / (double)pageSize);
+        int page = 1;
+        String kw = "user";
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.asc("id"));
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sorts));
+        Page<SiteUser> usersPage = userRepository.seachQsl(kw, pageable);
+        assertThat(usersPage.getTotalPages()).isEqualTo(totalPages);
+        assertThat(usersPage.getNumber()).isEqualTo(page);
+        assertThat(usersPage.getSize()).isEqualTo(pageSize);
+
+        List<SiteUser> users = usersPage.get().toList();
+        assertThat(users.size()).isEqualTo(pageSize);
+
+        SiteUser u = users.get(0);
+        assertThat(u.getId()).isEqualTo(2L);
+        assertThat(u.getUsername()).isEqualTo("user2");
+        assertThat(u.getEmail()).isEqualTo("user2@test.com");
+        assertThat(u.getPassword()).isEqualTo("{noop}1234");
+
     }
 }
